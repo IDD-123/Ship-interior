@@ -3,164 +3,140 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Интерьер — конфигуратор</title>
+  <title>Конфигуратор</title>
   <style>
-    :root{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
-    body{margin:12px;background:#fafafa;display:flex;flex-direction:column;align-items:center;gap:12px}
-    h1{font-size:18px;margin:0}
-    .stage{width:100%;max-width:1280px;aspect-ratio:16/9;border:1px solid #ddd;position:relative;overflow:hidden;background:#000}
+    body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;flex-direction:column;font-family:system-ui}
+    .stage{position:relative;width:100%;max-width:1280px;aspect-ratio:16/9;background:#000;overflow:hidden}
     .layer{position:absolute;inset:0}
-    .layer img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-    .controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;width:100%}
-    .block{background:#fff;padding:10px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.06);width:300px}
-    .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-    .thumb{width:60px;height:40px;border-radius:6px;border:1px solid #ccc;display:inline-grid;place-items:center;cursor:pointer;font-weight:600}
-    .thumb.active{outline:3px solid #222;transform:scale(1.03)}
-    .view-controls{display:flex;gap:8px}
-    .view-controls button{padding:6px 10px;border-radius:6px;border:none;background:#e6d3b3;cursor:pointer}
-    .small{font-size:13px;padding:6px 8px}
-    .clear-btn{width:60px;height:40px;border-radius:6px;border:1px solid #ccc;background:#e6d3b3;cursor:pointer}
-    #status{font-size:13px;color:#a33;min-height:18px;margin-top:6px}
-    @media(max-width:560px){.block{width:44vw}.thumb{width:44px;height:32px}.clear-btn{width:44px;height:32px}}
+    .layer img{width:100%;height:100%;object-fit:cover;display:block}
+    .controls{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;background:none;padding:4px}
+    .view-controls{display:flex;gap:6px;margin-right:10px;flex-wrap:wrap;justify-content:center}
+    .view-controls button{padding:4px 8px;background:none;border:1px solid #fff;border-radius:4px;color:#fff;cursor:pointer;text-shadow:0 0 2px #000;font-size:13px}
+    .view-controls button.active{background:rgba(255,255,255,0.1)}
+    .block{display:flex;align-items:center;gap:6px;color:#fff;text-shadow:0 0 2px #000;flex-wrap:wrap;justify-content:center;font-size:13px}
+    .thumbs{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+    .thumb{width:28px;height:28px;border-radius:4px;border:1px solid #fff;cursor:pointer}
+    .thumb.active{outline:2px solid #fff;transform:scale(1.05)}
+    .slider-block{display:flex;align-items:center;gap:4px;color:#fff;text-shadow:0 0 2px #000;font-size:12px}
+    input[type="range"]{width:70px;cursor:pointer}
+
+    @media (max-width:768px){
+      .controls{gap:6px;bottom:4px;padding:2px}
+      .view-controls button{font-size:11px;padding:3px 6px}
+      .thumb{width:24px;height:24px}
+      input[type="range"]{width:60px}
+    }
   </style>
 </head>
 <body>
-  <h1>Конфигуратор интерьера</h1>
-
   <div class="stage" id="stage">
     <div class="layer" id="baseLayer"></div>
     <div class="layer" id="wallsLayer"></div>
     <div class="layer" id="sillLayer"></div>
     <div class="layer" id="ceilingLayer"></div>
-  </div>
-
-  <div class="view-controls" style="margin-top:6px">
-    <button class="small" id="viewBtn0">Ракурс 1</button>
-    <button class="small" id="viewBtn1">Ракурс 2</button>
-    <button class="small" id="viewBtn2">Ракурс 3</button>
-  </div>
-
-  <div class="controls" id="controls">
-    <div class="block">
-      <strong>Стены</strong>
-      <div class="thumbs" id="wallsThumbs"></div>
-      <div style="margin-top:8px"><button class="clear-btn" onclick="clearLayer('walls')"></button></div>
-    </div>
-
-    <div class="block">
-      <strong>Подоконник</strong>
-      <div class="thumbs" id="sillThumbs"></div>
-      <div style="margin-top:8px"><button class="clear-btn" onclick="clearLayer('sill')"></button></div>
-    </div>
-
-    <div class="block">
-      <strong>Потолок</strong>
-      <div class="thumbs" id="ceilingThumbs"></div>
-      <div style="margin-top:8px"><button class="clear-btn" onclick="clearLayer('ceiling')"></button></div>
+    <div class="layer" id="tablesLayer"></div>
+    <div class="controls" id="controls">
+      <div class="view-controls" id="viewControls"></div>
+      <div class="block"><span>Стены</span><div class="thumbs" id="wallsThumbs"></div></div>
+      <div class="block"><span>Подоконник</span><div class="thumbs" id="sillThumbs"></div></div>
+      <div class="block"><span>Потолок</span><div class="thumbs" id="ceilingThumbs"></div></div>
+      <div class="block"><span>Столы</span>
+        <!-- убрал лишнюю кнопку/мини-цветы для столов — теперь управление только ползунком -->
+        <div class="slider-block"><span>0</span><input type="range" id="tablesOpacity" min="0" max="100" value="100"/><span>100</span></div>
+      </div>
     </div>
   </div>
-
-  <div id="status" aria-live="polite"></div>
 
 <script>
 (function(){
-  const views = ['view1','view2','view3'];
-  let currentView = 0;
-  const basePattern = 'base_beige_#.jpg';
-  const options = {
-    walls: [
-      {file:'walls_white_#.png', color:'#ffffff'},
-      {file:'walls_choco_#.png', color:'#5a3c2a'},
-      {file:'walls_blue_#.png', color:'#8ab7e3'},
-      {file:'walls_malachite_#.png', color:'#0b7d5c'}
+  const views=['view1','view2','view3','view4'];
+  let currentView=0;
+  const basePattern='base_beige_#.jpg';
+  const options={
+    walls:[
+      {file:'walls_white_#.png',color:'#fff'},
+      {file:'walls_choco_#.png',color:'#5a3c2a'},
+      {file:'walls_blue_#.png',color:'#8ab7e3'},
+      {file:'walls_malachite_#.png',color:'#0b7d5c'},
+      {file:'walls_beige_#.png',color:'#d8c39f'}
     ],
-    sill: [
-      {file:'sill_white_#.png', color:'#ffffff'},
-      {file:'sill_choco_#.png', color:'#5a3c2a'},
-      {file:'sill_blue_#.png', color:'#8ab7e3'},
-      {file:'sill_malachite_#.png', color:'#0b7d5c'}
+    sill:[
+      {file:'sill_white_#.png',color:'#fff'},
+      {file:'sill_choco_#.png',color:'#5a3c2a'},
+      {file:'sill_blue_#.png',color:'#8ab7e3'},
+      {file:'sill_malachite_#.png',color:'#0b7d5c'},
+      {file:'sill_beige_#.png',color:'#d8c39f'}
     ],
-    ceiling: [
-      {file:'ceiling_white_#.png', color:'#ffffff'},
-      {file:'ceiling_choco_#.png', color:'#5a3c2a'},
-      {file:'ceiling_blue_#.png', color:'#8ab7e3'},
-      {file:'ceiling_malachite_#.png', color:'#0b7d5c'}
-    ]
+    ceiling:[
+      {file:'ceiling_white_#.png',color:'#fff'},
+      {file:'ceiling_choco_#.png',color:'#5a3c2a'},
+      {file:'ceiling_blue_#.png',color:'#8ab7e3'},
+      {file:'ceiling_malachite_#.png',color:'#0b7d5c'},
+      {file:'ceiling_beige_#.png',color:'#d8c39f'}
+    ],
+    // файл мебели (столов/стульев) — должен быть один PNG с прозрачностью по ракурсам: tables_set_view1.png и пр.
+    tables:[{file:'tables_set_#.png',color:'#c9a96e'}]
   };
-  const state = {walls:'', sill:'', ceiling:''};
-  const baseEl = document.getElementById('baseLayer');
-  const layersMap = {walls: document.getElementById('wallsLayer'), sill: document.getElementById('sillLayer'), ceiling: document.getElementById('ceilingLayer')};
-  const statusEl = document.getElementById('status');
+
+  // состояние: теперь tables по умолчанию включены (чтобы картинка сразу показывалась)
+  const state={walls:'',sill:'',ceiling:'',tables: options.tables[0].file};
+
+  const baseEl=document.getElementById('baseLayer');
+  const layersMap={walls:document.getElementById('wallsLayer'),sill:document.getElementById('sillLayer'),ceiling:document.getElementById('ceilingLayer'),tables:document.getElementById('tablesLayer')};
+  const opacitySlider=document.getElementById('tablesOpacity');
 
   function preloadImage(src){
-    return new Promise(resolve => {
-      if(!src){ resolve(null); return; }
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
-      img.src = src;
-    });
+    return new Promise(r=>{if(!src){r(null);return;}const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src;});
   }
-
-  function makeName(pattern){ return pattern.replace('#', views[currentView]); }
+  function makeName(p){return p.replace('#',views[currentView]);}
 
   async function drawBase(){
-    baseEl.innerHTML = '';
-    const name = makeName(basePattern);
-    const img = await preloadImage(name);
-    if(img){ baseEl.appendChild(img); statusEl.textContent = ''; }
-    else { baseEl.style.background = '#e6d3b3'; statusEl.textContent = 'Базовое изображение не найдено: '+name; }
+    baseEl.innerHTML='';
+    const img=await preloadImage(makeName(basePattern));
+    if(img)baseEl.appendChild(img);
   }
-
-  async function drawLayer(layerKey){
-    const el = layersMap[layerKey];
-    el.innerHTML = '';
-    const pattern = state[layerKey];
+  async function drawLayer(layer){
+    const el=layersMap[layer];
+    el.innerHTML='';
+    const pattern=state[layer];
     if(!pattern) return;
-    const name = makeName(pattern);
-    const img = await preloadImage(name);
-    if(img){ el.appendChild(img); statusEl.textContent = ''; }
-    else { const warn = document.createElement('div'); warn.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(160,0,0,0.5);font-weight:700;text-align:center;padding:8px'; warn.textContent = 'Файл не найден: '+name; el.appendChild(warn); statusEl.textContent = 'Не найдены некоторые файлы — проверьте имена и расположение рядом с HTML.'; }
+    const img=await preloadImage(makeName(pattern));
+    if(img){
+      if(layer==='tables') img.style.opacity = (opacitySlider.value/100).toString();
+      el.appendChild(img);
+    }
   }
 
-  function clearLayer(layer){ state[layer] = ''; document.querySelectorAll('#'+layer+'Thumbs .thumb').forEach(t=>t.classList.remove('active')); drawLayer(layer); }
-
+  // создаём мини-кнопки только для real color layers (без столов)
   function setupThumbs(){
-    ['walls','sill','ceiling'].forEach(layer => {
-      const container = document.getElementById(layer+'Thumbs');
-      container.innerHTML = '';
-      options[layer].forEach(opt => {
-        const div = document.createElement('div');
-        div.className = 'thumb';
-        div.style.background = opt.color;
-        div.dataset.filePattern = opt.file;
-        div.addEventListener('click', () => {
-          state[layer] = opt.file;
-          document.querySelectorAll('#'+layer+'Thumbs .thumb').forEach(t=>t.classList.remove('active'));
-          div.classList.add('active');
-          drawLayer(layer);
-        });
-        container.appendChild(div);
+    ['walls','sill','ceiling'].forEach(layer=>{
+      const c=document.getElementById(layer+'Thumbs');
+      c.innerHTML='';
+      options[layer].forEach(opt=>{
+        const d=document.createElement('div');
+        d.className='thumb'; d.style.background=opt.color;
+        d.onclick=()=>{ state[layer]=opt.file; document.querySelectorAll('#'+layer+'Thumbs .thumb').forEach(t=>t.classList.remove('active')); d.classList.add('active'); drawLayer(layer); };
+        c.appendChild(d);
       });
     });
   }
 
-  async function changeView(index){
-    if(index<0 || index>=views.length) return;
-    currentView = index;
-    document.querySelectorAll('.view-controls button').forEach((b,i)=> b.style.outline = (i===index? '2px solid #333' : ''));
+  async function changeView(i){
+    currentView=i;
+    document.querySelectorAll('.view-controls button').forEach((b,n)=>b.classList.toggle('active',n===i));
     await drawBase();
-    await Promise.all(['walls','sill','ceiling'].map(k => drawLayer(k)));
+    await Promise.all(['walls','sill','ceiling','tables'].map(k=>drawLayer(k)));
   }
 
-  window.clearLayer = clearLayer;
-  window.changeView = changeView;
+  opacitySlider.oninput = ()=>{ const img = layersMap.tables.querySelector('img'); if(img) img.style.opacity = opacitySlider.value/100; };
+
+  // создать кнопки ракурсов
+  const vc=document.getElementById('viewControls');
+  views.forEach((v,i)=>{const b=document.createElement('button');b.textContent='Ракурс '+(i+1);b.onclick=()=>changeView(i);vc.appendChild(b);});
 
   setupThumbs();
-  document.getElementById('viewBtn0').addEventListener('click', ()=> changeView(0));
-  document.getElementById('viewBtn1').addEventListener('click', ()=> changeView(1));
-  document.getElementById('viewBtn2').addEventListener('click', ()=> changeView(2));
   changeView(0);
+
 })();
 </script>
 </body>
